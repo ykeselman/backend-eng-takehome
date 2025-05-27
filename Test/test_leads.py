@@ -2,12 +2,8 @@ import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from datetime import datetime
-import tempfile
 import os
 
-# Import from your main application file
-# Assuming the main app code is in a file called 'main.py'
 from main import app, get_db, Base, Lead, LeadState
 
 # Create test database

@@ -4,7 +4,7 @@ from pydantic import BaseModel, EmailStr
 from sqlalchemy import create_engine, Column, Integer, String, DateTime, Enum
 from sqlalchemy.orm import declarative_base
 from sqlalchemy.orm import sessionmaker, Session
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import List, Optional
 import enum
 import logging
@@ -24,6 +24,9 @@ class LeadState(str, enum.Enum):
     PENDING = "PENDING"
     REACHED_OUT = "REACHED_OUT"
 
+def utcnow():
+    return datetime.now(timezone.utc)
+
 # Database Models
 class Lead(Base):
     __tablename__ = "leads"
@@ -34,8 +37,8 @@ class Lead(Base):
     email = Column(String, nullable=False)
     resume_s3_path = Column(String, nullable=False)  # S3 full path
     state = Column(Enum(LeadState), default=LeadState.PENDING, nullable=False)
-    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+    created_at = Column(DateTime, default=utcnow, nullable=False)
+    updated_at = Column(DateTime, default=utcnow, onupdate=utcnow, nullable=False)
 
 # Create tables
 Base.metadata.create_all(bind=engine)
@@ -148,7 +151,8 @@ def get_leads(
     api_key: str = Depends(get_current_user)
 ):
     """Get list of leads with optional filtering by state"""
-    
+
+    assert api_key
     query = db.query(Lead)
     
     if state:
@@ -176,6 +180,7 @@ def update_lead(
 ):
     """Update a lead (including state transitions)"""
     
+    assert api_key
     lead = db.query(Lead).filter(Lead.id == lead_id).first()
     if not lead:
         raise HTTPException(status_code=404, detail="Lead not found")
@@ -187,7 +192,7 @@ def update_lead(
         setattr(lead, field, value)
     
     # Update the updated_at timestamp
-    lead.updated_at = datetime.utcnow()
+    lead.updated_at = utcnow()
     
     db.commit()
     db.refresh(lead)
@@ -203,12 +208,13 @@ def update_lead_state(
 ):
     """Update only the state of a lead (convenience endpoint for attorneys)"""
     
+    assert api_key
     lead = db.query(Lead).filter(Lead.id == lead_id).first()
     if not lead:
         raise HTTPException(status_code=404, detail="Lead not found")
     
     lead.state = new_state
-    lead.updated_at = datetime.utcnow()
+    lead.updated_at = utcnow()
     
     db.commit()
     db.refresh(lead)
@@ -220,7 +226,8 @@ def update_lead_state(
 @app.get("/health")
 def health_check():
     """Health check endpoint"""
-    return {"status": "healthy", "timestamp": datetime.utcnow()}
+    return {"status": "healthy", "timestamp": utcnow()}
+
 
 if __name__ == "__main__":
     import uvicorn
