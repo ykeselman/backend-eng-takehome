@@ -1,0 +1,7 @@
+fastapi
+pydantic
+sqlalchemy
+uvicorn
+pytest
+httpx
+email-validator
