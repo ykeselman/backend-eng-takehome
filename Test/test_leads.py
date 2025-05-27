@@ -1,3 +1,16 @@
+"""
+This is a test harness for the FastAPI app implemented in main.py.
+
+It's also mostly written by Anthropic's Claude Sonnet 4.
+
+It uses a test DB instead of the real one.
+
+All tests are passing.
+
+To run: pytest -s test_leads.py
+
+"""
+
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine

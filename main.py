@@ -1,3 +1,18 @@
+"""
+This code is mostly courtesy of Anthropic Claude Sonnet 4.
+
+Emails are implemented as stubs.
+
+Resumes are assumed to be stored in S3 and only their references are passed around.
+
+We use SQLAlchemy ORM for mapping objects to SQL Lite tables.
+
+Authentication is handled through an API token because it's assumed to be sitting
+behind an internal firewall.
+
+The code is tested in Test/test_leads.py
+"""
+
 from fastapi import FastAPI, HTTPException, Depends, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from pydantic import BaseModel, EmailStr
